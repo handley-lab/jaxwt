@@ -135,17 +135,19 @@ def iswtn(coeffs, wavelet, axes=None, norm=False):
     if norm:
         w = Wavelet(*(f * jnp.sqrt(2) for f in w))
     trim_approx = not isinstance(coeffs[0], dict)
+    if axes is not None:
+        axes = tuple(axes)
     if trim_approx:
         output = coeffs[0]
         detail_list = coeffs[1:]
     else:
-        output = coeffs[0]['a' * len(next(iter(coeffs[0])))]
+        first_dict = coeffs[0]
+        n = len(axes) if axes is not None else len(next(iter(first_dict)))
+        output = first_dict['a' * n]
         detail_list = coeffs
-    ndim_transform = len(next(iter(detail_list[0] if trim_approx else detail_list[0])))
     if axes is None:
         axes = tuple(range(output.ndim))
-    else:
-        axes = tuple(axes)
+    ndim_transform = len(axes)
     num_levels = len(detail_list)
 
     for j in range(num_levels):

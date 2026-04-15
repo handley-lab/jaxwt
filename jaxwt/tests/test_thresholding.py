@@ -44,3 +44,15 @@ def test_threshold_grad():
     x = jnp.linspace(-4, 4, 17)
     g = jax.grad(lambda x: jnp.sum(threshold(x, 2.0, 'soft')))(x)
     assert g.shape == x.shape
+
+
+def test_threshold_firm_edge_cases():
+    """Test firm threshold at boundaries."""
+    x = jnp.array([0., 0.5, 1.0, 2.0, 3.0, 4.0])
+    result = threshold_firm(x, 1.0, 3.0)
+    # |x| <= value_low → 0
+    np.testing.assert_allclose(np.array(result[:2]), [0., 0.], atol=1e-12)
+    # |x| = value_low → 0
+    np.testing.assert_allclose(float(result[2]), 0., atol=1e-12)
+    # |x| > value_high → unchanged
+    np.testing.assert_allclose(float(result[-1]), 4., atol=1e-12)

@@ -96,3 +96,32 @@ def test_iswt2_roundtrip(wavelet):
     coeffs = swt2(x, wavelet, level=2)
     rec = iswt2(coeffs, wavelet)
     np.testing.assert_allclose(np.array(rec), np.array(x), atol=ATOL)
+
+
+# --- 3D SWT ---
+
+def test_swtn_3d_matches_pywt():
+    x_np = np.random.RandomState(0).randn(8, 8, 8)
+    cj = swtn(jnp.array(x_np), 'haar', level=1)
+    cp = pywt.swtn(x_np, 'haar', level=1)
+    for jd, pd in zip(cj, cp):
+        for key in jd:
+            np.testing.assert_allclose(np.array(jd[key]), pd[key], atol=ATOL)
+
+
+def test_iswtn_3d_roundtrip():
+    x = jnp.array(np.random.RandomState(0).randn(8, 8, 8))
+    coeffs = swtn(x, 'haar', level=1)
+    rec = iswtn(coeffs, 'haar')
+    np.testing.assert_allclose(np.array(rec), np.array(x), atol=ATOL)
+
+
+def test_swtn_subset_axes():
+    """Transform only 2 axes of a 3D array."""
+    x_np = np.random.RandomState(0).randn(8, 8, 8)
+    axes = (0, 2)
+    cj = swtn(jnp.array(x_np), 'haar', level=1, axes=axes)
+    cp = pywt.swtn(x_np, 'haar', level=1, axes=axes)
+    for jd, pd in zip(cj, cp):
+        for key in jd:
+            np.testing.assert_allclose(np.array(jd[key]), pd[key], atol=ATOL)
