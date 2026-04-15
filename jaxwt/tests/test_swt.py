@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import pywt
 import pytest
 
-from jaxwt._swt import swt, iswt
+from jaxwt._swt import swt, iswt, swtn, iswtn, swt2, iswt2
 
 WAVELETS = ['haar', 'db2', 'db4', 'sym4']
 ATOL = 1e-11
@@ -53,3 +53,46 @@ def test_swt_trim_approx(wavelet='db2', N=16, level=2):
     coeffs_pywt = pywt.swt(x_np, wavelet, level=level, trim_approx=True)
     for j, p in zip(coeffs_jax, coeffs_pywt):
         np.testing.assert_allclose(np.array(j), p, atol=ATOL)
+
+
+# --- nD SWT ---
+
+@pytest.mark.parametrize('wavelet', WAVELETS)
+@pytest.mark.parametrize('shape', [(8, 8), (16, 16)])
+def test_swtn_matches_pywt(wavelet, shape):
+    x_np = np.random.RandomState(0).randn(*shape)
+    level = 2
+    cj = swtn(jnp.array(x_np), wavelet, level=level)
+    cp = pywt.swtn(x_np, wavelet, level=level)
+    for jd, pd in zip(cj, cp):
+        for key in jd:
+            np.testing.assert_allclose(np.array(jd[key]), pd[key], atol=ATOL)
+
+
+@pytest.mark.parametrize('wavelet', WAVELETS)
+@pytest.mark.parametrize('shape', [(8, 8), (16, 16)])
+def test_iswtn_roundtrip(wavelet, shape):
+    x = jnp.array(np.random.RandomState(0).randn(*shape))
+    level = 2
+    coeffs = swtn(x, wavelet, level=level)
+    rec = iswtn(coeffs, wavelet)
+    np.testing.assert_allclose(np.array(rec), np.array(x), atol=ATOL)
+
+
+@pytest.mark.parametrize('wavelet', ['haar', 'db2'])
+def test_swt2_matches_pywt_swtn(wavelet):
+    """swt2 is an alias for swtn with 2 axes — compare against pywt.swtn."""
+    x_np = np.random.RandomState(0).randn(16, 16)
+    cj = swt2(jnp.array(x_np), wavelet, level=2)
+    cp = pywt.swtn(x_np, wavelet, level=2)
+    for jd, pd in zip(cj, cp):
+        for key in jd:
+            np.testing.assert_allclose(np.array(jd[key]), pd[key], atol=ATOL)
+
+
+@pytest.mark.parametrize('wavelet', ['haar', 'db2'])
+def test_iswt2_roundtrip(wavelet):
+    x = jnp.array(np.random.RandomState(0).randn(16, 16))
+    coeffs = swt2(x, wavelet, level=2)
+    rec = iswt2(coeffs, wavelet)
+    np.testing.assert_allclose(np.array(rec), np.array(x), atol=ATOL)
