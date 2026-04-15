@@ -25,12 +25,16 @@ _WAVELET_SPECS = {
 }
 
 
+_PARAM_FAMILIES = {'cmor': (-8., 8.), 'shan': (-20., 20.), 'fbsp': (-20., 20.)}
+
+
 def _wavelet_from_name(name):
     if name in _WAVELET_SPECS:
         return ContinuousWavelet(name, *_WAVELET_SPECS[name])
-    for prefix, bounds in [('cmor', (-8., 8.)), ('shan', (-20., 20.)), ('fbsp', (-20., 20.))]:
+    for prefix, bounds in _PARAM_FAMILIES.items():
         if name.startswith(prefix):
             return ContinuousWavelet(name, *bounds, True)
+    return _WAVELET_SPECS[name]  # KeyError for unsupported names
 
 
 def _parse_params(name, prefix):
