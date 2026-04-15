@@ -34,9 +34,8 @@ def _wavelet_from_name(name):
         return ContinuousWavelet(name, -20., 20., True)
 
 
-def _parse_params(name, prefix, n):
-    parts = name[len(prefix):].split('-')
-    return tuple(float(p) if '.' in p else int(p) for p in parts[:n])
+def _parse_params(name, prefix):
+    return tuple(float(p) if '.' in p else int(p) for p in name[len(prefix):].split('-'))
 
 
 # --- Wavelet functions (from pywt/_extensions/c/cwt.template.c) ---
@@ -101,13 +100,14 @@ def _psi(w, x):
     if name.startswith('gaus'): return _gaus(x, int(name[4:]))
     if name.startswith('cgau'): return _cgau(x, int(name[4:]))
     if name.startswith('cmor'):
-        fb, fc = _parse_params(name, 'cmor', 2)
+        fb, fc = _parse_params(name, 'cmor')
         return _cmor(x, fb, fc)
     if name.startswith('shan'):
-        fb, fc = _parse_params(name, 'shan', 2)
+        fb, fc = _parse_params(name, 'shan')
         return _shan(x, fb, fc)
-    m, fb, fc = _parse_params(name, 'fbsp', 3)
-    return _fbsp(x, m, fb, fc)
+    if name.startswith('fbsp'):
+        m, fb, fc = _parse_params(name, 'fbsp')
+        return _fbsp(x, m, fb, fc)
 
 
 # --- Utility functions ---
