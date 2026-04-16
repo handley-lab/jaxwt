@@ -69,3 +69,37 @@ def test_cwt_grad():
     scales = jnp.array([1., 2., 4.])
     g = jax.grad(lambda x: jnp.sum(jnp.abs(cwt(x, scales, 'morl')[0])))(x)
     assert g.shape == x.shape
+
+
+# --- Two-phase API: prepare + apply ---
+
+from jaxwt._cwt import prepare_cwt, apply_cwt
+
+
+def test_apply_cwt_jit():
+    x = jnp.array(np.random.RandomState(0).randn(128))
+    bank = prepare_cwt((1., 2., 4., 8.), 'morl')
+    coef, _ = jax.jit(apply_cwt)(x, bank)
+    coef_ref, _ = cwt(x, (1., 2., 4., 8.), 'morl')
+    np.testing.assert_allclose(np.array(coef), np.array(coef_ref), atol=1e-14)
+
+
+def test_apply_cwt_jit_complex():
+    x = jnp.array(np.random.RandomState(0).randn(128))
+    bank = prepare_cwt((1., 2., 4.), 'cmor1.5-1.0')
+    coef, _ = jax.jit(apply_cwt)(x, bank)
+    assert coef.shape == (3, 128)
+
+
+def test_apply_cwt_vmap():
+    batch = jnp.stack([jnp.array(np.random.RandomState(i).randn(128)) for i in range(4)])
+    bank = prepare_cwt((1., 2., 4.), 'morl')
+    batch_coef = jax.vmap(lambda x: apply_cwt(x, bank)[0])(batch)
+    assert batch_coef.shape == (4, 3, 128)
+
+
+def test_apply_cwt_grad():
+    x = jnp.array(np.random.RandomState(0).randn(64))
+    bank = prepare_cwt((1., 2., 4.), 'morl')
+    g = jax.grad(lambda x: jnp.sum(jnp.abs(apply_cwt(x, bank)[0])))(x)
+    assert g.shape == x.shape

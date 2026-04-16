@@ -165,26 +165,27 @@ def scale2frequency(wavelet, scale, precision=8):
 # --- Two-phase CWT: prepare + apply ---
 
 class CWTKernelBank:
-    """Precomputed CWT kernels. kernels/freqs are traced; lengths/scales are static."""
-    __slots__ = ('kernels_r', 'kernels_i', 'kernel_lengths', 'scales_sqrt', 'complex_cwt', 'freqs')
+    """Precomputed CWT kernels. kernels/freqs are traced; lengths/scales/method are static."""
+    __slots__ = ('kernels_r', 'kernels_i', 'kernel_lengths', 'scales_sqrt', 'complex_cwt', 'method', 'freqs')
 
-    def __init__(self, kernels_r, kernels_i, kernel_lengths, scales_sqrt, complex_cwt, freqs):
+    def __init__(self, kernels_r, kernels_i, kernel_lengths, scales_sqrt, complex_cwt, method, freqs):
         self.kernels_r = kernels_r
         self.kernels_i = kernels_i
         self.kernel_lengths = kernel_lengths
         self.scales_sqrt = scales_sqrt
         self.complex_cwt = complex_cwt
+        self.method = method
         self.freqs = freqs
 
 
 jax.tree_util.register_pytree_node(
     CWTKernelBank,
-    lambda b: ((b.kernels_r, b.kernels_i, b.freqs), (b.kernel_lengths, b.scales_sqrt, b.complex_cwt)),
-    lambda aux, children: CWTKernelBank(children[0], children[1], aux[0], aux[1], aux[2], children[2]),
+    lambda b: ((b.kernels_r, b.kernels_i, b.freqs), (b.kernel_lengths, b.scales_sqrt, b.complex_cwt, b.method)),
+    lambda aux, children: CWTKernelBank(children[0], children[1], aux[0], aux[1], aux[2], aux[3], children[2]),
 )
 
 
-def prepare_cwt(scales, wavelet, sampling_period=1., precision=12):
+def prepare_cwt(scales, wavelet, sampling_period=1., method='conv', precision=12):
     """Build CWT kernel bank. Pure JAX, all shapes static from scale/wavelet/precision."""
     w = as_wavelet(wavelet)
     # Derive step/width analytically from wavelet bounds (Python floats, no tracing)
@@ -219,9 +220,6 @@ def prepare_cwt(scales, wavelet, sampling_period=1., precision=12):
     pad_r = jnp.stack([jnp.pad(k, (0, Lmax - k.shape[0])) for k in kernels_r])
     pad_i = jnp.stack([jnp.pad(k, (0, Lmax - k.shape[0])) for k in kernels_i]) if w.complex_cwt else jnp.empty((0,))
 
-    # Precompute static crop metadata per scale
-    crop_slices = tuple(lengths)  # store true kernel lengths
-
     freqs = scale2frequency(w, jnp.asarray(scales), precision) / sampling_period
 
     return CWTKernelBank(
@@ -230,17 +228,18 @@ def prepare_cwt(scales, wavelet, sampling_period=1., precision=12):
         kernel_lengths=tuple(lengths),
         scales_sqrt=tuple(math.sqrt(float(s)) for s in scales),
         complex_cwt=w.complex_cwt,
+        method=method,
         freqs=freqs,
     )
 
 
-def apply_cwt(data, bank, method='conv'):
-    """Apply precomputed CWT kernel bank to data. JIT-compatible."""
+def apply_cwt(data, bank):
+    """Apply precomputed CWT kernel bank to data. Fully JIT-compatible."""
     N = data.shape[0]
     Lmax = bank.kernels_r.shape[1]
     n_scales = bank.kernels_r.shape[0]
 
-    if method == 'fft':
+    if bank.method == 'fft':
         fft_size = 1 << int(math.ceil(math.log2(N + Lmax - 1)))
         data_fft = jnp.fft.rfft(data, fft_size)
 
@@ -248,13 +247,12 @@ def apply_cwt(data, bank, method='conv'):
     for i in range(n_scales):
         L = bank.kernel_lengths[i]
         scale_sqrt = bank.scales_sqrt[i]
-        # Crop indices are static Python ints (L, N known at trace time)
         conv_len = N + L - 1
-        d = (conv_len - 1 - N) / 2.  # after diff, coef has conv_len - 1 elements
+        d = (conv_len - 1 - N) / 2.
         lo = math.floor(d)
         hi = conv_len - 1 - math.ceil(d)
 
-        if method == 'fft':
+        if bank.method == 'fft':
             conv_r = jnp.fft.irfft(data_fft * jnp.fft.rfft(bank.kernels_r[i], fft_size), fft_size)
         else:
             conv_r = jnp.convolve(data, bank.kernels_r[i])
@@ -263,7 +261,7 @@ def apply_cwt(data, bank, method='conv'):
         out_r.append(coef_r[lo:hi])
 
         if bank.complex_cwt:
-            if method == 'fft':
+            if bank.method == 'fft':
                 conv_i = jnp.fft.irfft(data_fft * jnp.fft.rfft(bank.kernels_i[i], fft_size), fft_size)
             else:
                 conv_i = jnp.convolve(data, bank.kernels_i[i])
@@ -277,5 +275,5 @@ def apply_cwt(data, bank, method='conv'):
 
 def cwt(data, scales, wavelet, sampling_period=1., method='conv', precision=12):
     """1D continuous wavelet transform. Convenience wrapper around prepare_cwt + apply_cwt."""
-    bank = prepare_cwt(scales, wavelet, sampling_period, precision)
-    return apply_cwt(data, bank, method)
+    bank = prepare_cwt(scales, wavelet, sampling_period, method, precision)
+    return apply_cwt(data, bank)
