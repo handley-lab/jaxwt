@@ -36,6 +36,17 @@ class ContinuousWavelet(NamedTuple):
 
 
 def as_wavelet(wavelet):
+    """Return a ContinuousWavelet, looking up by name if needed.
+
+    Parameters
+    ----------
+    wavelet : str or ContinuousWavelet
+        Wavelet name or existing ContinuousWavelet.
+
+    Returns
+    -------
+    ContinuousWavelet
+    """
     return wavelet if isinstance(wavelet, ContinuousWavelet) else _wavelet_from_name(wavelet)
 
 
