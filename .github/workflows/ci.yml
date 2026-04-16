@@ -42,15 +42,15 @@ jobs:
         run: pip install -e ".[dev]"
 
       - name: Lint
-        run: ruff check jaxwt/
+        run: ruff check jaxwavelets/
 
       - name: Format check
-        run: ruff format --check jaxwt/
+        run: ruff format --check jaxwavelets/
 
       - name: Test with coverage
         run: |
           pip install pytest-cov
-          JAX_ENABLE_X64=1 pytest jaxwt/tests/ --cov=jaxwt --cov-report=xml --cov-report=term-missing -v --tb=short
+          JAX_ENABLE_X64=1 pytest jaxwavelets/tests/ --cov=jaxwavelets --cov-report=xml --cov-report=term-missing -v --tb=short
 
       - name: Upload coverage
         if: matrix.python-version == '3.12'

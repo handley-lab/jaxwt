@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 import pywt
 
-from jaxwt._swt import iswt, iswt2, iswtn, swt, swt2, swtn
+from jaxwavelets._swt import iswt, iswt2, iswtn, swt, swt2, swtn
 
 WAVELETS = ["haar", "db2", "db4", "sym4"]
 ATOL = 1e-14

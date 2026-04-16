@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "jaxwt"
+name = "jaxwavelets"
 version = "0.1.0"
 description = "JAX-native wavelet transforms"
 readme = "README.md"
@@ -32,11 +32,11 @@ docs = [
 ]
 
 [project.urls]
-Repository = "https://github.com/handley-lab/jaxwt"
-Documentation = "https://jaxwt.readthedocs.io"
+Repository = "https://github.com/handley-lab/jaxwavelets"
+Documentation = "https://jaxwavelets.readthedocs.io"
 
 [tool.setuptools.packages.find]
-include = ["jaxwt*"]
+include = ["jaxwavelets*"]
 
 [tool.ruff]
 target-version = "py310"
@@ -52,8 +52,8 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"jaxwt/__init__.py" = ["F401"]      # re-exports are the point of __init__
+"jaxwavelets/__init__.py" = ["F401"]      # re-exports are the point of __init__
 "benchmarks/*" = ["E402"]            # env vars must be set before jax import
 
 [tool.pytest.ini_options]
-testpaths = ["jaxwt/tests"]
+testpaths = ["jaxwavelets/tests"]

@@ -1,4 +1,4 @@
-# jaxwt
+# jaxwavelets
 
 JAX-native wavelet transforms.
 
@@ -14,7 +14,7 @@ JAX-native wavelet transforms.
 ## Testing
 
 ```bash
-pytest jaxwt/tests/test_against_pywt.py
+pytest jaxwavelets/tests/test_against_pywt.py
 ```
 
 Requires `pywt` as a test dependency. Tests verify numerical match with pywt to `atol=1e-11` on CPU float64.
@@ -22,5 +22,5 @@ Requires `pywt` as a test dependency. Tests verify numerical match with pywt to 
 ## Generating filter coefficients
 
 ```bash
-python scripts/extract_filters.py > jaxwt/_filters.py
+python scripts/extract_filters.py > jaxwavelets/_filters.py
 ```

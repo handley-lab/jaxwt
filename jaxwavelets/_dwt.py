@@ -5,7 +5,7 @@ import math
 import jax
 import jax.numpy as jnp
 
-from jaxwt._filters import get_wavelet
+from jaxwavelets._filters import get_wavelet
 
 
 def dwt_max_level(data_len, filter_len):

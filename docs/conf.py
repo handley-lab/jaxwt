@@ -1,5 +1,5 @@
-"""Sphinx configuration for jaxwt documentation."""
-project = 'jaxwt'
+"""Sphinx configuration for jaxwavelets documentation."""
+project = 'jaxwavelets'
 copyright = '2026, Will Handley'
 author = 'Will Handley'
 

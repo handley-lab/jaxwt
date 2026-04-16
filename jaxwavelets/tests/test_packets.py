@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 import pywt
 
-from jaxwt._packets import (
+from jaxwavelets._packets import (
     wp_decompose,
     wp_decompose_nd,
     wp_reconstruct,

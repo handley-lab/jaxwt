@@ -1,10 +1,10 @@
-# jaxwt
+# jaxwavelets
 
-JAX-native wavelet transforms. Differentiable, JIT-compilable, GPU-ready.
+Extending [PyWavelets](https://pywavelets.readthedocs.io/) to [JAX](https://jax.readthedocs.io/). Differentiable, JIT-compilable, GPU-ready wavelet transforms.
+
+Built on the mathematical foundations of PyWavelets and validated against it to machine precision. jaxwavelets brings the full PyWavelets API to JAX, enabling automatic differentiation, GPU acceleration, and composability with `jax.vmap`, `jax.jit`, and `jax.pmap`.
 
 ## Features
-
-Full feature parity with [PyWavelets](https://pywavelets.readthedocs.io/):
 
 | Transform | Functions |
 |---|---|
@@ -25,32 +25,32 @@ Full feature parity with [PyWavelets](https://pywavelets.readthedocs.io/):
 ```python
 import jax
 import jax.numpy as jnp
-import jaxwt
+import jaxwavelets as wt
 
-# Single example
+# Decompose and reconstruct
 x = jnp.ones((64, 64))
-coeffs = jaxwt.wavedecn(x, 'db4', level=3)
-rec = jaxwt.waverecn(coeffs, 'db4')
+coeffs = wt.wavedecn(x, 'db4', level=3)
+rec = wt.waverecn(coeffs, 'db4')
 
-# Batched via vmap
+# Batch via vmap
 from functools import partial
 batch = jnp.ones((10, 64, 64))
-batch_coeffs = jax.vmap(partial(jaxwt.wavedecn, wavelet='db4', level=3))(batch)
+batch_coeffs = jax.vmap(partial(wt.wavedecn, wavelet='db4', level=3))(batch)
 
-# Differentiable
-grad = jax.grad(lambda x: jnp.sum(jaxwt.waverecn(jaxwt.wavedecn(x, 'db4'), 'db4')))(x)
+# Differentiate through the transform
+grad = jax.grad(lambda x: jnp.sum(wt.waverecn(wt.wavedecn(x, 'db4'), 'db4')))(x)
 
-# JIT-compiled
-fast = jax.jit(jaxwt.wavedecn, static_argnames=['wavelet', 'mode', 'level'])
+# JIT-compile for speed
+fast = jax.jit(wt.wavedecn, static_argnames=['wavelet', 'mode', 'level'])
 coeffs = fast(x, wavelet='db4', level=3)
 ```
 
 ## Performance
 
-JIT-compiled jaxwt on CPU vs pywt C (lower is better):
+JIT-compiled jaxwavelets on CPU vs PyWavelets C:
 
 ```
-Transform                       pywt         jaxwt (JIT)    ratio
+Transform                       pywt         jaxwavelets (JIT)    ratio
 --------------------------------------------------------------------------
 dwt 1D (N=4096)                  0.011ms       0.023ms       2.1x
 wavedecn 1D (N=4096)             0.065ms       0.046ms       0.7x  ← faster
@@ -61,54 +61,56 @@ cwt morl 6 scales (N=512)        0.316ms       0.139ms       0.4x  ← faster
 cwt cmor 6 scales (N=512)        0.615ms       0.254ms       0.4x  ← faster
 ```
 
-Plus: `jax.grad`, `jax.vmap`, `jax.pmap`, GPU acceleration — none of which pywt supports.
+On top of this, jaxwavelets supports `jax.grad`, `jax.vmap`, `jax.pmap`, and GPU acceleration.
 
 ## Installation
 
 ```bash
-pip install jax jaxlib
-# Then add jaxwt to your path or install from source
+pip install jaxwavelets
 ```
 
-No runtime dependency on pywt. Filter coefficients are pre-extracted.
+No runtime dependency on PyWavelets. Filter coefficients are pre-extracted.
 
 ## Testing
 
 ```bash
 pip install pywt pytest
-pytest jaxwt/tests/
+pytest jaxwavelets/tests/
 ```
 
-1182 tests verify numerical agreement with pywt to machine precision (`atol=1e-14` for direct comparisons, `atol=1e-11` for roundtrips).
+1189 tests verify numerical agreement with PyWavelets to machine precision.
 
 ## Composability
 
-Every function is a single-example transform. Batching, differentiation, compilation, and distribution are the caller's responsibility via JAX's composable transformations:
+Every function operates on a single example. Batching, differentiation, compilation, and distribution compose naturally via JAX transforms:
 
 ```python
-# Batch over 1000 examples
-jax.vmap(partial(jaxwt.wavedecn, wavelet='db4'))(batch_of_fields)
+import jaxwavelets as wt
+
+# Batch over examples
+jax.vmap(partial(wt.wavedecn, wavelet='db4'))(batch_of_fields)
 
 # Per-example gradients
 jax.vmap(jax.grad(loss_fn))(batch)
 
 # Distribute across devices
-jax.pmap(partial(jaxwt.wavedecn, wavelet='db4'))(sharded_data)
+jax.pmap(partial(wt.wavedecn, wavelet='db4'))(sharded_data)
 
-# Compile once, run many times
-fast_transform = jax.jit(jaxwt.wavedecn, static_argnames=['wavelet', 'mode', 'level'])
-
-# Nest arbitrarily: jit(vmap(grad(...)))
+# Nest arbitrarily
 jax.jit(jax.vmap(jax.grad(
-    lambda x: jnp.sum(jaxwt.waverecn(jaxwt.wavedecn(x, 'db4'), 'db4'))
+    lambda x: jnp.sum(wt.waverecn(wt.wavedecn(x, 'db4'), 'db4'))
 )))(batch)
 ```
 
-Coefficients are JAX pytrees (`WaveletCoeffs`, `CWTKernelBank`), so `jax.tree_util.tree_map` works directly on them.
+Coefficients are JAX pytrees, so `jax.tree_util.tree_map` works directly on them.
 
 ## Design
 
-- **Pure JAX** — no numpy, no C extensions, no complex arithmetic internally
-- **Single-example functions** — compose with `jax.vmap`/`jax.pmap`/`jax.grad`/`jax.jit` from outside
-- **Pytree coefficients** — all outputs are JAX-compatible pytrees, batchable via `vmap`
-- **No defensive programming** — clean, lightweight scientific code
+- **Pure JAX** — no numpy, no C extensions
+- **Single-example functions** — compose with `jax.vmap`/`jax.pmap`/`jax.grad`/`jax.jit`
+- **Pytree coefficients** — all outputs are JAX-compatible pytrees
+- **Validated against PyWavelets** — machine-precision numerical agreement
+
+## Acknowledgements
+
+jaxwavelets extends the [PyWavelets](https://pywavelets.readthedocs.io/) library to JAX. PyWavelets provides the mathematical reference implementation and filter coefficient database used for validation.

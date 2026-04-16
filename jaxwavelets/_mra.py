@@ -2,7 +2,7 @@
 
 import jax.numpy as jnp
 
-from jaxwt._multidim import WaveletCoeffs, wavedecn, waverecn
+from jaxwavelets._multidim import WaveletCoeffs, wavedecn, waverecn
 
 
 def _mra_nd(data, wavelet, mode, level, axes):

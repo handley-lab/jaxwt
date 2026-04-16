@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import pywt
 
-from jaxwt._thresholding import threshold, threshold_firm
+from jaxwavelets._thresholding import threshold, threshold_firm
 
 ATOL = 1e-12
 

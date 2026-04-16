@@ -4,94 +4,94 @@ API Reference
 Discrete Wavelet Transform
 --------------------------
 
-.. autofunction:: jaxwt.dwt
-.. autofunction:: jaxwt.idwt
-.. autofunction:: jaxwt.dwt2
-.. autofunction:: jaxwt.idwt2
-.. autofunction:: jaxwt.dwtn
-.. autofunction:: jaxwt.idwtn
+.. autofunction:: jaxwavelets.dwt
+.. autofunction:: jaxwavelets.idwt
+.. autofunction:: jaxwavelets.dwt2
+.. autofunction:: jaxwavelets.idwt2
+.. autofunction:: jaxwavelets.dwtn
+.. autofunction:: jaxwavelets.idwtn
 
 Multilevel DWT
 --------------
 
-.. autofunction:: jaxwt.wavedec2
-.. autofunction:: jaxwt.waverec2
-.. autofunction:: jaxwt.wavedecn
-.. autofunction:: jaxwt.waverecn
+.. autofunction:: jaxwavelets.wavedec2
+.. autofunction:: jaxwavelets.waverec2
+.. autofunction:: jaxwavelets.wavedecn
+.. autofunction:: jaxwavelets.waverecn
 
-.. autoclass:: jaxwt.WaveletCoeffs
+.. autoclass:: jaxwavelets.WaveletCoeffs
    :members:
 
 Stationary Wavelet Transform
 -----------------------------
 
-.. autofunction:: jaxwt.swt
-.. autofunction:: jaxwt.iswt
-.. autofunction:: jaxwt.swt2
-.. autofunction:: jaxwt.iswt2
-.. autofunction:: jaxwt.swtn
-.. autofunction:: jaxwt.iswtn
+.. autofunction:: jaxwavelets.swt
+.. autofunction:: jaxwavelets.iswt
+.. autofunction:: jaxwavelets.swt2
+.. autofunction:: jaxwavelets.iswt2
+.. autofunction:: jaxwavelets.swtn
+.. autofunction:: jaxwavelets.iswtn
 
 Continuous Wavelet Transform
 -----------------------------
 
-.. autofunction:: jaxwt.cwt
-.. autofunction:: jaxwt.prepare_cwt
-.. autofunction:: jaxwt.apply_cwt
-.. autofunction:: jaxwt.wavefun
-.. autofunction:: jaxwt.integrate_wavelet
-.. autofunction:: jaxwt.central_frequency
-.. autofunction:: jaxwt.scale2frequency
+.. autofunction:: jaxwavelets.cwt
+.. autofunction:: jaxwavelets.prepare_cwt
+.. autofunction:: jaxwavelets.apply_cwt
+.. autofunction:: jaxwavelets.wavefun
+.. autofunction:: jaxwavelets.integrate_wavelet
+.. autofunction:: jaxwavelets.central_frequency
+.. autofunction:: jaxwavelets.scale2frequency
 
-.. autoclass:: jaxwt.ContinuousWavelet
+.. autoclass:: jaxwavelets.ContinuousWavelet
    :members:
 
-.. autoclass:: jaxwt.CWTKernelBank
+.. autoclass:: jaxwavelets.CWTKernelBank
    :members:
 
 Fully Separable DWT
 -------------------
 
-.. autofunction:: jaxwt.fswavedecn
-.. autofunction:: jaxwt.fswaverecn
+.. autofunction:: jaxwavelets.fswavedecn
+.. autofunction:: jaxwavelets.fswaverecn
 
-.. autoclass:: jaxwt.FswavedecnResult
+.. autoclass:: jaxwavelets.FswavedecnResult
    :members:
 
 Multiresolution Analysis
 ------------------------
 
-.. autofunction:: jaxwt.mra
-.. autofunction:: jaxwt.imra
-.. autofunction:: jaxwt.mra2
-.. autofunction:: jaxwt.imra2
-.. autofunction:: jaxwt.mran
-.. autofunction:: jaxwt.imran
+.. autofunction:: jaxwavelets.mra
+.. autofunction:: jaxwavelets.imra
+.. autofunction:: jaxwavelets.mra2
+.. autofunction:: jaxwavelets.imra2
+.. autofunction:: jaxwavelets.mran
+.. autofunction:: jaxwavelets.imran
 
 Wavelet Packets
 ---------------
 
-.. autofunction:: jaxwt.wp_decompose
-.. autofunction:: jaxwt.wp_reconstruct
-.. autofunction:: jaxwt.wp_decompose_nd
-.. autofunction:: jaxwt.wp_reconstruct_nd
+.. autofunction:: jaxwavelets.wp_decompose
+.. autofunction:: jaxwavelets.wp_reconstruct
+.. autofunction:: jaxwavelets.wp_decompose_nd
+.. autofunction:: jaxwavelets.wp_reconstruct_nd
 
 Thresholding
 ------------
 
-.. autofunction:: jaxwt.threshold
-.. autofunction:: jaxwt.threshold_firm
+.. autofunction:: jaxwavelets.threshold
+.. autofunction:: jaxwavelets.threshold_firm
 
 Utilities
 ---------
 
-.. autofunction:: jaxwt.dwt_max_level
-.. autofunction:: jaxwt.downcoef
-.. autofunction:: jaxwt.upcoef
-.. autofunction:: jaxwt.qmf
-.. autofunction:: jaxwt.orthogonal_filter_bank
-.. autofunction:: jaxwt.get_wavelet
-.. autofunction:: jaxwt.swt_max_level
+.. autofunction:: jaxwavelets.dwt_max_level
+.. autofunction:: jaxwavelets.downcoef
+.. autofunction:: jaxwavelets.upcoef
+.. autofunction:: jaxwavelets.qmf
+.. autofunction:: jaxwavelets.orthogonal_filter_bank
+.. autofunction:: jaxwavelets.get_wavelet
+.. autofunction:: jaxwavelets.swt_max_level
 
-.. autoclass:: jaxwt.Wavelet
+.. autoclass:: jaxwavelets.Wavelet
    :members:

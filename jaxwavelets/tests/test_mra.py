@@ -4,7 +4,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from jaxwt._mra import imra, imra2, imran, mra, mra2, mran
+from jaxwavelets._mra import imra, imra2, imran, mra, mra2, mran
 
 ATOL_RT = 1e-11  # MRA tests are all roundtrip (additivity)
 

@@ -3,9 +3,9 @@
 import jax
 import jax.numpy as jnp
 
-from jaxwt._dwt import dwt_max_level
-from jaxwt._filters import get_wavelet
-from jaxwt._multidim import _dwt_axis, _idwt_axis
+from jaxwavelets._dwt import dwt_max_level
+from jaxwavelets._filters import get_wavelet
+from jaxwavelets._multidim import _dwt_axis, _idwt_axis
 
 
 def _wavedec_axis(data, w, mode, level, axis):

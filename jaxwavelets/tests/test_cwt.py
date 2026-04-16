@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import pywt
 
-from jaxwt._cwt import (
+from jaxwavelets._cwt import (
     apply_cwt,
     central_frequency,
     cwt,

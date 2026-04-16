@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import pywt
 
-from jaxwt._fswt import fswavedecn, fswaverecn
+from jaxwavelets._fswt import fswavedecn, fswaverecn
 
 WAVELETS = ["haar", "db2", "db4"]
 ATOL = 1e-14

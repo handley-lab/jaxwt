@@ -1,8 +1,8 @@
 """Wavelet packet decomposition and reconstruction."""
 
-from jaxwt._dwt import dwt, dwt_max_level, idwt
-from jaxwt._filters import get_wavelet
-from jaxwt._multidim import dwtn, idwtn
+from jaxwavelets._dwt import dwt, dwt_max_level, idwt
+from jaxwavelets._filters import get_wavelet
+from jaxwavelets._multidim import dwtn, idwtn
 
 
 def wp_decompose(data, wavelet, mode="symmetric", maxlevel=None):

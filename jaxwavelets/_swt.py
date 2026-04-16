@@ -5,9 +5,9 @@ from itertools import product
 
 import jax.numpy as jnp
 
-from jaxwt._dwt import idwt
-from jaxwt._filters import Wavelet, get_wavelet
-from jaxwt._multidim import idwtn
+from jaxwavelets._dwt import idwt
+from jaxwavelets._filters import Wavelet, get_wavelet
+from jaxwavelets._multidim import idwtn
 
 
 def swt_max_level(input_len):

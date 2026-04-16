@@ -3,8 +3,8 @@
 import jax
 import jax.numpy as jnp
 
-from jaxwt._dwt import dwt, dwt_max_level, idwt
-from jaxwt._filters import get_wavelet
+from jaxwavelets._dwt import dwt, dwt_max_level, idwt
+from jaxwavelets._filters import get_wavelet
 
 
 class WaveletCoeffs:
