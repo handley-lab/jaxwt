@@ -1,10 +1,10 @@
 # jaxwavelets
 
-JAX-native wavelet transforms extending PyWavelets to JAX.
+Extending PyWavelets to JAX. `import jaxwavelets as wt`.
 
 ## When to use
 
-Use when the user needs wavelet transforms in JAX — differentiable, JIT-compilable, GPU-ready. Triggers on: 'wavelet', 'jaxwavelets', 'wavedec', 'waverec', 'dwt', 'idwt', 'cwt', 'swt', 'wavelet packet', 'multiresolution', 'MRA'.
+Use when the user needs wavelet transforms in JAX. Triggers on: 'wavelet', 'jaxwavelets', 'wavedec', 'waverec', 'dwt', 'idwt', 'cwt', 'swt', 'wavelet packet', 'multiresolution', 'MRA'.
 
 ## Quick reference
 
@@ -46,6 +46,7 @@ jax.jit(wt.wavedecn, static_argnames=['wavelet', 'mode', 'level'])(x, wavelet='d
 
 ## Key design points
 
+- `import jaxwavelets as wt`
 - Single-example functions — user applies `vmap`/`pmap`/`grad`/`jit` from outside
 - No complex arithmetic internally (GPU-safe)
 - No numpy dependency at runtime

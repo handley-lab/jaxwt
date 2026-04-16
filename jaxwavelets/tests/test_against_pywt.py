@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 import pywt
 
-import jaxwavelets
+import jaxwavelets as wt
 
 WAVELETS = ["haar", "db2", "db4", "db8", "sym4", "sym8", "coif2", "coif4"]
 MODES = ["symmetric", "reflect", "periodization"]
@@ -26,7 +26,7 @@ ATOL_RT = (
 @pytest.mark.parametrize("mode", MODES)
 def test_dwt_matches_pywt(wavelet, N, mode):
     x_np = np.random.RandomState(0).randn(N)
-    cA_jax, cD_jax = jaxwavelets.dwt(jnp.array(x_np), wavelet, mode)
+    cA_jax, cD_jax = wt.dwt(jnp.array(x_np), wavelet, mode)
     cA_pywt, cD_pywt = pywt.dwt(x_np, wavelet, mode)
     np.testing.assert_allclose(np.array(cA_jax), cA_pywt, atol=ATOL)
     np.testing.assert_allclose(np.array(cD_jax), cD_pywt, atol=ATOL)
@@ -42,7 +42,7 @@ def test_idwt_matches_pywt(wavelet, N, mode):
     x_np = np.random.RandomState(0).randn(N)
     cA_pywt, cD_pywt = pywt.dwt(x_np, wavelet, mode)
     rec_pywt = pywt.idwt(cA_pywt, cD_pywt, wavelet, mode)
-    rec_jax = jaxwavelets.idwt(jnp.array(cA_pywt), jnp.array(cD_pywt), wavelet, mode)
+    rec_jax = wt.idwt(jnp.array(cA_pywt), jnp.array(cD_pywt), wavelet, mode)
     np.testing.assert_allclose(np.array(rec_jax[: len(rec_pywt)]), rec_pywt, atol=ATOL)
 
 
@@ -51,8 +51,8 @@ def test_idwt_matches_pywt(wavelet, N, mode):
 @pytest.mark.parametrize("mode", MODES)
 def test_perfect_reconstruction_1d(wavelet, N, mode):
     x = jnp.array(np.random.RandomState(0).randn(N))
-    cA, cD = jaxwavelets.dwt(x, wavelet, mode)
-    rec = jaxwavelets.idwt(cA, cD, wavelet, mode)[:N]
+    cA, cD = wt.dwt(x, wavelet, mode)
+    rec = wt.idwt(cA, cD, wavelet, mode)[:N]
     np.testing.assert_allclose(np.array(rec), np.array(x), atol=ATOL_RT)
 
 
@@ -65,7 +65,7 @@ def test_perfect_reconstruction_1d(wavelet, N, mode):
 @pytest.mark.parametrize("mode", MODES)
 def test_wavedecn_matches_pywt(wavelet, shape, level, mode):
     x_np = np.random.RandomState(0).randn(*shape)
-    coeffs_jax = jaxwavelets.wavedecn(jnp.array(x_np), wavelet, mode=mode, level=level)
+    coeffs_jax = wt.wavedecn(jnp.array(x_np), wavelet, mode=mode, level=level)
     coeffs_pywt = pywt.wavedecn(x_np, wavelet, mode=mode, level=level)
     np.testing.assert_allclose(np.array(coeffs_jax.approx), coeffs_pywt[0], atol=ATOL)
     for jax_d, pywt_d in zip(coeffs_jax.details, coeffs_pywt[1:], strict=False):
@@ -81,8 +81,8 @@ def test_wavedecn_matches_pywt(wavelet, shape, level, mode):
 @pytest.mark.parametrize("mode", MODES)
 def test_perfect_reconstruction_nd(wavelet, shape, mode):
     x = jnp.array(np.random.RandomState(0).randn(*shape))
-    coeffs = jaxwavelets.wavedecn(x, wavelet, mode=mode)
-    rec = jaxwavelets.waverecn(coeffs, wavelet, mode=mode)
+    coeffs = wt.wavedecn(x, wavelet, mode=mode)
+    rec = wt.waverecn(coeffs, wavelet, mode=mode)
     np.testing.assert_allclose(np.array(rec), np.array(x), atol=ATOL_RT)
 
 
@@ -93,8 +93,8 @@ def test_vmap_reconstruction_odd_shapes(wavelet, shape):
     batch = jnp.stack(
         [jnp.array(np.random.RandomState(i).randn(*shape)) for i in range(3)]
     )
-    f = partial(jaxwavelets.wavedecn, wavelet=wavelet, level=2)
-    g = partial(jaxwavelets.waverecn, wavelet=wavelet)
+    f = partial(wt.wavedecn, wavelet=wavelet, level=2)
+    g = partial(wt.waverecn, wavelet=wavelet)
     batch_rec = jax.vmap(lambda x: g(f(x)))(batch)
     np.testing.assert_allclose(np.array(batch_rec), np.array(batch), atol=ATOL_RT)
 
@@ -104,7 +104,7 @@ def test_vmap_reconstruction_odd_shapes(wavelet, shape):
 
 def test_grad():
     x = jnp.array(np.random.RandomState(0).randn(16, 16))
-    g = jax.grad(lambda x: jnp.sum(jaxwavelets.waverecn(jaxwavelets.wavedecn(x, "db4"), "db4")))(x)
+    g = jax.grad(lambda x: jnp.sum(wt.waverecn(wt.wavedecn(x, "db4"), "db4")))(x)
     np.testing.assert_allclose(np.array(g), np.ones_like(g), atol=ATOL_RT)
 
 
@@ -112,15 +112,15 @@ def test_vmap():
     batch = jnp.stack(
         [jnp.array(np.random.RandomState(i).randn(8, 8)) for i in range(4)]
     )
-    batch_coeffs = jax.vmap(partial(jaxwavelets.wavedecn, wavelet="haar", level=1))(batch)
+    batch_coeffs = jax.vmap(partial(wt.wavedecn, wavelet="haar", level=1))(batch)
     assert batch_coeffs.approx.shape == (4, 4, 4)
-    batch_rec = jax.vmap(partial(jaxwavelets.waverecn, wavelet="haar"))(batch_coeffs)
+    batch_rec = jax.vmap(partial(wt.waverecn, wavelet="haar"))(batch_coeffs)
     np.testing.assert_allclose(np.array(batch_rec), np.array(batch), atol=ATOL_RT)
 
 
 def test_jit_roundtrip():
     x = jnp.array(np.random.RandomState(0).randn(16, 16))
     roundtrip = jax.jit(
-        lambda x: jaxwavelets.waverecn(jaxwavelets.wavedecn(x, "db4", level=2), "db4"),
+        lambda x: wt.waverecn(wt.wavedecn(x, "db4", level=2), "db4"),
     )
     np.testing.assert_allclose(np.array(roundtrip(x)), np.array(x), atol=ATOL_RT)

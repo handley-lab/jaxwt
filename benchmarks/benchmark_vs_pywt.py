@@ -15,10 +15,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import pywt
+from wt._cwt import apply_cwt, prepare_cwt
+from wt._swt import swt
 
-import jaxwavelets
-from jaxwavelets._cwt import apply_cwt, prepare_cwt
-from jaxwavelets._swt import swt
+import jaxwavelets as wt
 
 jax.config.update("jax_platform_name", "cpu")
 
@@ -42,10 +42,10 @@ x2d_j = jnp.array(x2d)
 x_swt = jnp.array(x1d[:1024])
 x_cwt = jnp.array(x1d[:512])
 
-dwt_jit = jax.jit(lambda x: jaxwavelets.dwt(x, "db4"))
-wavedecn_1d_jit = jax.jit(lambda x: jaxwavelets.wavedecn(x, "db4"))
-dwt2_jit = jax.jit(lambda x: jaxwavelets.dwt2(x, "db4"))
-wavedecn_2d_jit = jax.jit(lambda x: jaxwavelets.wavedecn(x, "db4", level=3))
+dwt_jit = jax.jit(lambda x: wt.dwt(x, "db4"))
+wavedecn_1d_jit = jax.jit(lambda x: wt.wavedecn(x, "db4"))
+dwt2_jit = jax.jit(lambda x: wt.dwt2(x, "db4"))
+wavedecn_2d_jit = jax.jit(lambda x: wt.wavedecn(x, "db4", level=3))
 swt_jit = jax.jit(lambda x: swt(x, "db4", level=3))
 
 bank_morl = prepare_cwt((1.0, 2.0, 4.0, 8.0, 16.0, 32.0), "morl")
