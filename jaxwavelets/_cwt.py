@@ -79,9 +79,6 @@ def _parse_params(name, prefix):
     )
 
 
-# --- Real wavelet functions ---
-
-
 def _morl(x):
     return jnp.cos(5.0 * x) * jnp.exp(-0.5 * x**2)
 
@@ -125,9 +122,6 @@ def _gaus(x, n):
             / jnp.sqrt(2027025.0 * s)
         ),
     }[n]()
-
-
-# --- Complex wavelet functions (return (real, imag) tuples) ---
 
 
 def _cgau(x, n):
@@ -271,9 +265,6 @@ def _psi(w, x):
         return _fbsp(x, m, fb, fc)
 
 
-# --- Public utility functions ---
-
-
 def wavefun(wavelet, precision=8):
     """Evaluate the wavelet function on a grid.
 
@@ -367,9 +358,6 @@ def scale2frequency(wavelet, scale, precision=8):
     return central_frequency(wavelet, precision) / scale
 
 
-# --- Two-phase CWT: prepare + apply ---
-
-
 class CWTKernelBank:
     """Precomputed CWT convolution kernels.
 
@@ -460,12 +448,10 @@ def prepare_cwt(scales, wavelet, sampling_period=1.0, method="conv", precision=1
         Precomputed kernel bank.
     """
     w = as_wavelet(wavelet)
-    # Derive step/width analytically from wavelet bounds (Python floats, no tracing)
     n_samples = 2**precision
     step = (w.upper_bound - w.lower_bound) / (n_samples - 1)
     width = w.upper_bound - w.lower_bound
 
-    # Evaluate and integrate wavelet function
     x = jnp.linspace(w.lower_bound, w.upper_bound, n_samples)
     psi = _psi(w, x)
     if w.complex_cwt:
@@ -474,7 +460,6 @@ def prepare_cwt(scales, wavelet, sampling_period=1.0, method="conv", precision=1
     else:
         int_psi = jnp.cumsum(psi) * step
 
-    # Build per-scale kernels
     kernels_r, kernels_i, lengths = [], [], []
     for scale in scales:
         scale = float(scale)
@@ -485,7 +470,7 @@ def prepare_cwt(scales, wavelet, sampling_period=1.0, method="conv", precision=1
         lengths.append(L)
         if w.complex_cwt:
             kernels_r.append(int_r[j][::-1])
-            kernels_i.append(-int_i[j][::-1])  # conjugate
+            kernels_i.append(-int_i[j][::-1])
         else:
             kernels_r.append(int_psi[j][::-1])
 

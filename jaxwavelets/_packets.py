@@ -73,7 +73,6 @@ def wp_reconstruct(leaves, wavelet, mode="symmetric"):
                 new_nodes.setdefault(parent, {})[path[-1]] = arr
         for parent, children in new_nodes.items():
             nodes[parent] = idwt(children["a"], children["d"], w, mode)
-        # Remove consumed leaves
         nodes = {k: v for k, v in nodes.items() if len(k) < level}
     return nodes[""]
 
@@ -148,7 +147,6 @@ def wp_reconstruct_nd(
     w = get_wavelet(wavelet)
     nodes = dict(leaves)
     sample_key = next(iter(nodes))
-    # Infer ndim from axes or ndim_transform
     ndim = len(axes) if axes is not None else ndim_transform
     maxlevel = len(sample_key) // ndim
     for level in range(maxlevel, 0, -1):

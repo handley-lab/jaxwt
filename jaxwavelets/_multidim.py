@@ -195,9 +195,6 @@ def waverecn(coeffs, wavelet, mode="symmetric"):
     return a
 
 
-# --- 2D convenience wrappers ---
-
-
 def dwt2(data, wavelet, mode="symmetric", axes=(-2, -1)):
     """Single-level 2D discrete wavelet transform.
 
@@ -306,7 +303,6 @@ def waverec2(coeffs, wavelet, mode="symmetric", axes=(-2, -1)):
     w = get_wavelet(wavelet)
     a = coeffs[0]
     for cH, cV, cD in coeffs[1:]:
-        # Trim approx to detail shape
         d_shape = cH.shape
         a = a[tuple(slice(s) for s in d_shape)]
         a = idwt2((a, (cH, cV, cD)), w, mode, axes)

@@ -115,9 +115,8 @@ def downcoef(part, data, wavelet, mode="symmetric", level=1):
     w = get_wavelet(wavelet)
     for _ in range(level - 1):
         data, _ = dwt(data, w, mode)
-    return {"a": lambda: dwt(data, w, mode)[0], "d": lambda: dwt(data, w, mode)[1]}[
-        part
-    ]()
+    cA, cD = dwt(data, w, mode)
+    return {"a": cA, "d": cD}[part]
 
 
 def upcoef(part, coeffs, wavelet, level=1, take=0):

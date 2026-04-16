@@ -65,9 +65,6 @@ def _swt_axis(data, w, level, start_level, axis):
     return out
 
 
-# --- 1D API ---
-
-
 def swt(data, wavelet, level=None, start_level=0, trim_approx=False, norm=False):
     """Multilevel 1D stationary (undecimated) wavelet transform.
 
@@ -142,9 +139,6 @@ def iswt(coeffs, wavelet, norm=False):
             x2 = jnp.roll(idwt(output[odd_idx], cD[odd_idx], w, "periodization"), 1)
             output = output.at[indices].set((x1 + x2) / 2)
     return output
-
-
-# --- nD API ---
 
 
 def swtn(data, wavelet, level, start_level=0, axes=None, trim_approx=False, norm=False):
@@ -280,8 +274,6 @@ def iswtn(coeffs, wavelet, axes=None, norm=False):
         for firsts in product(*[range(step_size)] * ndim_transform):
             approx = output.copy()
             indices = [slice(None)] * output.ndim
-            [slice(None)] * output.ndim
-            [slice(None)] * output.ndim
             for first, ax in zip(firsts, axes, strict=False):
                 sh = output.shape[ax]
                 indices[ax] = slice(first, sh, step_size)

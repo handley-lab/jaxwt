@@ -34,8 +34,9 @@ def threshold(data, value, mode="soft", substitute=0):
 
 def _soft(data, value, substitute=0):
     mag = jnp.abs(data)
-    shrunk = data * jnp.clip(1 - value / jnp.where(mag == 0, 1, mag), 0, None)
-    return jnp.where(mag < value, substitute, shrunk)
+    return jnp.where(
+        mag < value, substitute, jnp.sign(data) * jnp.maximum(mag - value, 0)
+    )
 
 
 def _hard(data, value, substitute=0):
@@ -44,16 +45,17 @@ def _hard(data, value, substitute=0):
 
 def _garrote(data, value, substitute=0):
     mag = jnp.abs(data)
-    shrunk = data * jnp.clip(1 - value**2 / jnp.where(mag == 0, 1, mag) ** 2, 0, None)
-    return jnp.where(mag < value, substitute, shrunk)
-
-
-def _greater(data, value, substitute=0):
-    return jnp.where(data < value, substitute, data)
+    return jnp.where(
+        mag < value, substitute, data * jnp.maximum(1 - (value / mag) ** 2, 0)
+    )
 
 
 def _less(data, value, substitute=0):
     return jnp.where(data > value, substitute, data)
+
+
+def _greater(data, value, substitute=0):
+    return jnp.where(data < value, substitute, data)
 
 
 def threshold_firm(data, value_low, value_high):
@@ -76,7 +78,5 @@ def threshold_firm(data, value_low, value_high):
     """
     mag = jnp.abs(data)
     vdiff = value_high - value_low
-    shrunk = data * jnp.clip(
-        value_high * (1 - value_low / jnp.where(mag == 0, 1, mag)) / vdiff, 0, None
-    )
+    shrunk = data * jnp.clip(value_high * (1 - value_low / mag) / vdiff, 0, None)
     return jnp.where(mag > value_high, data, shrunk)
