@@ -21,7 +21,7 @@ Built on the mathematical foundations of PyWavelets and validated against it to 
 | Fully separable | `fswavedecn`, `fswaverecn` |
 | Multiresolution analysis | `mra`, `imra`, `mra2`, `imra2`, `mran`, `imran` |
 | Wavelet packets | `wp_decompose`, `wp_reconstruct`, `wp_decompose_nd`, `wp_reconstruct_nd` |
-| Thresholding | `threshold`, `threshold_firm` |
+| Thresholding | `soft_threshold`, `hard_threshold`, `garrote_threshold`, `firm_threshold` |
 | Utilities | `downcoef`, `upcoef`, `qmf`, `orthogonal_filter_bank` |
 
 **Wavelets:** haar, db1-20, sym2-20, coif1-5, plus continuous wavelets (Morlet, Mexican hat, Gaussian 1-8, complex Gaussian 1-8, complex Morlet, Shannon, frequency B-spline).

@@ -33,4 +33,9 @@ from jaxwavelets._packets import (
     wp_reconstruct_nd,
 )
 from jaxwavelets._swt import iswt, iswt2, iswtn, swt, swt2, swt_max_level, swtn
-from jaxwavelets._thresholding import threshold, threshold_firm
+from jaxwavelets._thresholding import (
+    firm_threshold,
+    garrote_threshold,
+    hard_threshold,
+    soft_threshold,
+)

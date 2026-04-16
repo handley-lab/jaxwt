@@ -3,8 +3,8 @@
 import jax.numpy as jnp
 
 
-def threshold(data, value, mode="soft", substitute=0):
-    """Threshold wavelet coefficients.
+def soft_threshold(data, value, substitute=0):
+    """Soft thresholding: shrink coefficients toward zero.
 
     Parameters
     ----------
@@ -12,54 +12,65 @@ def threshold(data, value, mode="soft", substitute=0):
         Input data.
     value : float
         Threshold value.
-    mode : str
-        Thresholding mode: 'soft', 'hard', 'garrote', 'greater', or
-        'less'. Default 'soft'.
     substitute : float
-        Value to use for thresholded entries. Default 0.
+        Value for thresholded entries. Default 0.
 
     Returns
     -------
     array
         Thresholded data.
     """
-    return {
-        "soft": _soft,
-        "hard": _hard,
-        "garrote": _garrote,
-        "greater": _greater,
-        "less": _less,
-    }[mode](data, value, substitute)
-
-
-def _soft(data, value, substitute=0):
     mag = jnp.abs(data)
     return jnp.where(
         mag < value, substitute, jnp.sign(data) * jnp.maximum(mag - value, 0)
     )
 
 
-def _hard(data, value, substitute=0):
+def hard_threshold(data, value, substitute=0):
+    """Hard thresholding: zero out coefficients below threshold.
+
+    Parameters
+    ----------
+    data : array
+        Input data.
+    value : float
+        Threshold value.
+    substitute : float
+        Value for thresholded entries. Default 0.
+
+    Returns
+    -------
+    array
+        Thresholded data.
+    """
     return jnp.where(jnp.abs(data) < value, substitute, data)
 
 
-def _garrote(data, value, substitute=0):
+def garrote_threshold(data, value, substitute=0):
+    """Non-negative garrote thresholding: intermediate between soft and hard.
+
+    Parameters
+    ----------
+    data : array
+        Input data.
+    value : float
+        Threshold value.
+    substitute : float
+        Value for thresholded entries. Default 0.
+
+    Returns
+    -------
+    array
+        Thresholded data.
+    """
     mag = jnp.abs(data)
     return jnp.where(
         mag < value, substitute, data * jnp.maximum(1 - (value / mag) ** 2, 0)
     )
 
 
-def _less(data, value, substitute=0):
-    return jnp.where(data > value, substitute, data)
-
-
-def _greater(data, value, substitute=0):
-    return jnp.where(data < value, substitute, data)
-
-
-def threshold_firm(data, value_low, value_high):
-    """Firm (semi-soft) thresholding.
+def firm_threshold(data, value_low, value_high):
+    """Firm (semi-soft) thresholding: linear interpolation between soft and hard.
 
     Parameters
     ----------
@@ -69,7 +80,6 @@ def threshold_firm(data, value_low, value_high):
         Lower threshold. Coefficients below this are zeroed.
     value_high : float
         Upper threshold. Coefficients above this are kept unchanged.
-        Values in between are shrunk linearly.
 
     Returns
     -------

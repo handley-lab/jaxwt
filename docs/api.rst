@@ -79,8 +79,10 @@ Wavelet Packets
 Thresholding
 ------------
 
-.. autofunction:: jaxwavelets.threshold
-.. autofunction:: jaxwavelets.threshold_firm
+.. autofunction:: jaxwavelets.soft_threshold
+.. autofunction:: jaxwavelets.hard_threshold
+.. autofunction:: jaxwavelets.garrote_threshold
+.. autofunction:: jaxwavelets.firm_threshold
 
 Utilities
 ---------
