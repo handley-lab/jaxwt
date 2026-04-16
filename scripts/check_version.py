@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Check that version has been bumped and PKGBUILD matches pyproject.toml."""
+
 import re
 import subprocess
 import sys
@@ -37,7 +38,10 @@ def main():
         with open("PKGBUILD") as f:
             pkgbuild_version = get_pkgbuild_version(f.read())
         if local_version != pkgbuild_version:
-            print(f"❌ Version mismatch: pyproject.toml={local_version} PKGBUILD={pkgbuild_version}", file=sys.stderr)
+            print(
+                f"❌ Version mismatch: pyproject.toml={local_version} PKGBUILD={pkgbuild_version}",
+                file=sys.stderr,
+            )
             return 1
     except FileNotFoundError:
         pass

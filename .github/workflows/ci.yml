@@ -41,10 +41,11 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev]"
 
-      - name: Pre-commit checks
-        run: |
-          pip install pre-commit
-          pre-commit run --all-files
+      - name: Lint
+        run: ruff check jaxwt/
+
+      - name: Format check
+        run: ruff format --check jaxwt/
 
       - name: Test with coverage
         run: |

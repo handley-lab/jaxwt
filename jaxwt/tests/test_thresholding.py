@@ -1,7 +1,9 @@
 """Tests for thresholding functions."""
+
 import numpy as np
 import jax
-jax.config.update('jax_enable_x64', True)
+
+jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp
 import pywt
 import pytest
@@ -11,7 +13,7 @@ from jaxwt._thresholding import threshold, threshold_firm
 ATOL = 1e-12
 
 
-@pytest.mark.parametrize('mode', ['soft', 'hard', 'greater', 'less', 'garrote'])
+@pytest.mark.parametrize("mode", ["soft", "hard", "greater", "less", "garrote"])
 def test_threshold_matches_pywt(mode):
     x_np = np.linspace(-4, 4, 17)
     r_jax = threshold(jnp.array(x_np), 2.0, mode)
@@ -19,7 +21,7 @@ def test_threshold_matches_pywt(mode):
     np.testing.assert_allclose(np.array(r_jax), r_pywt, atol=ATOL)
 
 
-@pytest.mark.parametrize('mode', ['soft', 'hard', 'garrote'])
+@pytest.mark.parametrize("mode", ["soft", "hard", "garrote"])
 def test_threshold_substitute(mode):
     x_np = np.linspace(-4, 4, 17)
     r_jax = threshold(jnp.array(x_np), 2.0, mode, substitute=-1.0)
@@ -36,23 +38,23 @@ def test_threshold_firm_matches_pywt():
 
 def test_threshold_jit():
     x = jnp.linspace(-4, 4, 17)
-    f = jax.jit(lambda x: threshold(x, 2.0, 'soft'))
-    np.testing.assert_allclose(np.array(f(x)), np.array(threshold(x, 2.0, 'soft')))
+    f = jax.jit(lambda x: threshold(x, 2.0, "soft"))
+    np.testing.assert_allclose(np.array(f(x)), np.array(threshold(x, 2.0, "soft")))
 
 
 def test_threshold_grad():
     x = jnp.linspace(-4, 4, 17)
-    g = jax.grad(lambda x: jnp.sum(threshold(x, 2.0, 'soft')))(x)
+    g = jax.grad(lambda x: jnp.sum(threshold(x, 2.0, "soft")))(x)
     assert g.shape == x.shape
 
 
 def test_threshold_firm_edge_cases():
     """Test firm threshold at boundaries."""
-    x = jnp.array([0., 0.5, 1.0, 2.0, 3.0, 4.0])
+    x = jnp.array([0.0, 0.5, 1.0, 2.0, 3.0, 4.0])
     result = threshold_firm(x, 1.0, 3.0)
     # |x| <= value_low → 0
-    np.testing.assert_allclose(np.array(result[:2]), [0., 0.], atol=1e-12)
+    np.testing.assert_allclose(np.array(result[:2]), [0.0, 0.0], atol=1e-12)
     # |x| = value_low → 0
-    np.testing.assert_allclose(float(result[2]), 0., atol=1e-12)
+    np.testing.assert_allclose(float(result[2]), 0.0, atol=1e-12)
     # |x| > value_high → unchanged
-    np.testing.assert_allclose(float(result[-1]), 4., atol=1e-12)
+    np.testing.assert_allclose(float(result[-1]), 4.0, atol=1e-12)

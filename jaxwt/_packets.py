@@ -1,11 +1,12 @@
 """Wavelet packet decomposition and reconstruction."""
+
 import jax.numpy as jnp
 from jaxwt._dwt import dwt, idwt, dwt_max_level
 from jaxwt._multidim import dwtn, idwtn
 from jaxwt._filters import get_wavelet
 
 
-def wp_decompose(data, wavelet, mode='symmetric', maxlevel=None):
+def wp_decompose(data, wavelet, mode="symmetric", maxlevel=None):
     """1D wavelet packet decomposition.
 
     Parameters
@@ -31,20 +32,20 @@ def wp_decompose(data, wavelet, mode='symmetric', maxlevel=None):
     w = get_wavelet(wavelet)
     if maxlevel is None:
         maxlevel = dwt_max_level(data.shape[0], w.dec_lo.shape[0])
-    leaves = {'': data}
+    leaves = {"": data}
     shapes = {}
     for _ in range(maxlevel):
         new_leaves = {}
         for path, x in leaves.items():
             shapes[path] = x.shape
             cA, cD = dwt(x, w, mode)
-            new_leaves[path + 'a'] = cA
-            new_leaves[path + 'd'] = cD
+            new_leaves[path + "a"] = cA
+            new_leaves[path + "d"] = cD
         leaves = new_leaves
     return leaves, shapes
 
 
-def wp_reconstruct(leaves, wavelet, mode='symmetric'):
+def wp_reconstruct(leaves, wavelet, mode="symmetric"):
     """1D wavelet packet reconstruction from a complete leaf set.
 
     Parameters
@@ -72,13 +73,13 @@ def wp_reconstruct(leaves, wavelet, mode='symmetric'):
                 parent = path[:-1]
                 new_nodes.setdefault(parent, {})[path[-1]] = arr
         for parent, children in new_nodes.items():
-            nodes[parent] = idwt(children['a'], children['d'], w, mode)
+            nodes[parent] = idwt(children["a"], children["d"], w, mode)
         # Remove consumed leaves
         nodes = {k: v for k, v in nodes.items() if len(k) < level}
-    return nodes['']
+    return nodes[""]
 
 
-def wp_decompose_nd(data, wavelet, mode='symmetric', maxlevel=None, axes=None):
+def wp_decompose_nd(data, wavelet, mode="symmetric", maxlevel=None, axes=None):
     """N-dimensional wavelet packet decomposition.
 
     Parameters
@@ -110,7 +111,7 @@ def wp_decompose_nd(data, wavelet, mode='symmetric', maxlevel=None, axes=None):
     ndim = len(axes)
     if maxlevel is None:
         maxlevel = dwt_max_level(min(data.shape[ax] for ax in axes), w.dec_lo.shape[0])
-    leaves = {'': data}
+    leaves = {"": data}
     shapes = {}
     for _ in range(maxlevel):
         new_leaves = {}
@@ -123,7 +124,9 @@ def wp_decompose_nd(data, wavelet, mode='symmetric', maxlevel=None, axes=None):
     return leaves, shapes
 
 
-def wp_reconstruct_nd(leaves, wavelet, mode='symmetric', axes=None, ndim_transform=None):
+def wp_reconstruct_nd(
+    leaves, wavelet, mode="symmetric", axes=None, ndim_transform=None
+):
     """N-dimensional wavelet packet reconstruction from a complete leaf set.
 
     Parameters
@@ -158,10 +161,10 @@ def wp_reconstruct_nd(leaves, wavelet, mode='symmetric', axes=None, ndim_transfo
         new_nodes = {}
         for path, arr in sorted(nodes.items()):
             if len(path) == key_len:
-                parent = path[:key_len - ndim]
-                subband = path[key_len - ndim:]
+                parent = path[: key_len - ndim]
+                subband = path[key_len - ndim :]
                 new_nodes.setdefault(parent, {})[subband] = arr
         for parent, children in new_nodes.items():
             nodes[parent] = idwtn(children, w, mode, axes)
         nodes = {k: v for k, v in nodes.items() if len(k) < key_len}
-    return nodes['']
+    return nodes[""]

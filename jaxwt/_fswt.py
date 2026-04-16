@@ -1,4 +1,5 @@
 """Fully separable wavelet decomposition."""
+
 import jax
 import jax.numpy as jnp
 from jaxwt._dwt import dwt_max_level
@@ -49,7 +50,8 @@ class FswavedecnResult:
     ``coeffs`` is JAX-traced; remaining fields are static metadata.
     Registered as a JAX pytree node.
     """
-    __slots__ = ('coeffs', 'coeff_slices', 'axes', 'wavelet', 'mode')
+
+    __slots__ = ("coeffs", "coeff_slices", "axes", "wavelet", "mode")
 
     def __init__(self, coeffs, coeff_slices, axes, wavelet, mode):
         self.coeffs = coeffs
@@ -73,7 +75,7 @@ jax.tree_util.register_pytree_node(
 )
 
 
-def fswavedecn(data, wavelet, mode='symmetric', levels=None, axes=None):
+def fswavedecn(data, wavelet, mode="symmetric", levels=None, axes=None):
     """Fully separable n-dimensional wavelet decomposition.
 
     Parameters
@@ -111,7 +113,9 @@ def fswavedecn(data, wavelet, mode='symmetric', levels=None, axes=None):
         offsets = [0]
         for s in shapes:
             offsets.append(offsets[-1] + s)
-        coeff_slices.append(tuple(slice(offsets[i], offsets[i+1]) for i in range(len(shapes))))
+        coeff_slices.append(
+            tuple(slice(offsets[i], offsets[i + 1]) for i in range(len(shapes)))
+        )
         arr = jnp.concatenate(coeffs, axis=ax)
 
     return FswavedecnResult(arr, tuple(coeff_slices), axes, w, mode)

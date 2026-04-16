@@ -1,21 +1,27 @@
 """Tests for continuous wavelet transform."""
+
 import numpy as np
 import jax
-jax.config.update('jax_enable_x64', True)
+
+jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp
 import pywt
 import pytest
 
 from jaxwt._cwt import cwt, wavefun, integrate_wavelet, central_frequency
 
-REAL_WAVELETS = ['morl', 'mexh'] + [f'gaus{i}' for i in range(1, 9)]
-COMPLEX_WAVELETS = [f'cgau{i}' for i in range(1, 9)] + ['cmor1.5-1.0', 'shan1.5-1.0', 'fbsp2-1.5-1.0']
+REAL_WAVELETS = ["morl", "mexh"] + [f"gaus{i}" for i in range(1, 9)]
+COMPLEX_WAVELETS = [f"cgau{i}" for i in range(1, 9)] + [
+    "cmor1.5-1.0",
+    "shan1.5-1.0",
+    "fbsp2-1.5-1.0",
+]
 ALL_WAVELETS = REAL_WAVELETS + COMPLEX_WAVELETS
-ATOL = 2e-14       # wavefun/integrate: fbsp sinc^m has ~1.5e-14 inherent precision loss
-ATOL_CWT = 5e-14   # CWT coefficients: amplified through convolution pipeline
+ATOL = 2e-14  # wavefun/integrate: fbsp sinc^m has ~1.5e-14 inherent precision loss
+ATOL_CWT = 5e-14  # CWT coefficients: amplified through convolution pipeline
 
 
-@pytest.mark.parametrize('wavelet', ALL_WAVELETS)
+@pytest.mark.parametrize("wavelet", ALL_WAVELETS)
 def test_wavefun_matches_pywt(wavelet):
     psi_jax, x_jax = wavefun(wavelet, precision=8)
     psi_pywt, x_pywt = pywt.ContinuousWavelet(wavelet).wavefun(level=8)
@@ -23,34 +29,34 @@ def test_wavefun_matches_pywt(wavelet):
     np.testing.assert_allclose(np.array(psi_jax), psi_pywt, atol=ATOL)
 
 
-@pytest.mark.parametrize('wavelet', ALL_WAVELETS)
+@pytest.mark.parametrize("wavelet", ALL_WAVELETS)
 def test_integrate_wavelet_matches_pywt(wavelet):
     int_psi_jax, _ = integrate_wavelet(wavelet, precision=8)
     int_psi_pywt, _ = pywt.integrate_wavelet(wavelet, precision=8)
     np.testing.assert_allclose(np.array(int_psi_jax), int_psi_pywt, atol=ATOL)
 
 
-@pytest.mark.parametrize('wavelet', ALL_WAVELETS)
+@pytest.mark.parametrize("wavelet", ALL_WAVELETS)
 def test_central_frequency_matches_pywt(wavelet):
     cf_jax = central_frequency(wavelet, precision=12)
     cf_pywt = pywt.central_frequency(wavelet, precision=12)
     np.testing.assert_allclose(float(cf_jax), cf_pywt, rtol=1e-6)
 
 
-@pytest.mark.parametrize('wavelet', REAL_WAVELETS)
+@pytest.mark.parametrize("wavelet", REAL_WAVELETS)
 def test_cwt_real_matches_pywt(wavelet):
     x = np.random.RandomState(0).randn(128)
-    scales = np.array([1., 2., 4., 8.])
+    scales = np.array([1.0, 2.0, 4.0, 8.0])
     coef_jax, freq_jax = cwt(jnp.array(x), scales, wavelet)
     coef_pywt, freq_pywt = pywt.cwt(x, scales, wavelet)
     np.testing.assert_allclose(np.array(coef_jax), coef_pywt, atol=ATOL_CWT)
     np.testing.assert_allclose(np.array(freq_jax), freq_pywt, rtol=1e-6)
 
 
-@pytest.mark.parametrize('wavelet', COMPLEX_WAVELETS)
+@pytest.mark.parametrize("wavelet", COMPLEX_WAVELETS)
 def test_cwt_complex_matches_pywt(wavelet):
     x = np.random.RandomState(0).randn(128)
-    scales = np.array([1., 2., 4., 8.])
+    scales = np.array([1.0, 2.0, 4.0, 8.0])
     coef_jax, _ = cwt(jnp.array(x), scales, wavelet)
     coef_pywt, _ = pywt.cwt(x, scales, wavelet)
     np.testing.assert_allclose(np.array(coef_jax), coef_pywt, atol=ATOL_CWT)
@@ -58,16 +64,16 @@ def test_cwt_complex_matches_pywt(wavelet):
 
 def test_cwt_fft_method():
     x = np.random.RandomState(0).randn(128)
-    scales = np.array([1., 2., 4.])
-    coef_conv, _ = cwt(jnp.array(x), scales, 'morl', method='conv')
-    coef_fft, _ = cwt(jnp.array(x), scales, 'morl', method='fft')
+    scales = np.array([1.0, 2.0, 4.0])
+    coef_conv, _ = cwt(jnp.array(x), scales, "morl", method="conv")
+    coef_fft, _ = cwt(jnp.array(x), scales, "morl", method="fft")
     np.testing.assert_allclose(np.array(coef_fft), np.array(coef_conv), atol=1e-10)
 
 
 def test_cwt_grad():
     x = jnp.array(np.random.RandomState(0).randn(64))
-    scales = jnp.array([1., 2., 4.])
-    g = jax.grad(lambda x: jnp.sum(jnp.abs(cwt(x, scales, 'morl')[0])))(x)
+    scales = jnp.array([1.0, 2.0, 4.0])
+    g = jax.grad(lambda x: jnp.sum(jnp.abs(cwt(x, scales, "morl")[0])))(x)
     assert g.shape == x.shape
 
 
@@ -78,28 +84,30 @@ from jaxwt._cwt import prepare_cwt, apply_cwt
 
 def test_apply_cwt_jit():
     x = jnp.array(np.random.RandomState(0).randn(128))
-    bank = prepare_cwt((1., 2., 4., 8.), 'morl')
+    bank = prepare_cwt((1.0, 2.0, 4.0, 8.0), "morl")
     coef, _ = jax.jit(apply_cwt)(x, bank)
-    coef_ref, _ = cwt(x, (1., 2., 4., 8.), 'morl')
+    coef_ref, _ = cwt(x, (1.0, 2.0, 4.0, 8.0), "morl")
     np.testing.assert_allclose(np.array(coef), np.array(coef_ref), atol=1e-14)
 
 
 def test_apply_cwt_jit_complex():
     x = jnp.array(np.random.RandomState(0).randn(128))
-    bank = prepare_cwt((1., 2., 4.), 'cmor1.5-1.0')
+    bank = prepare_cwt((1.0, 2.0, 4.0), "cmor1.5-1.0")
     coef, _ = jax.jit(apply_cwt)(x, bank)
     assert coef.shape == (3, 128)
 
 
 def test_apply_cwt_vmap():
-    batch = jnp.stack([jnp.array(np.random.RandomState(i).randn(128)) for i in range(4)])
-    bank = prepare_cwt((1., 2., 4.), 'morl')
+    batch = jnp.stack(
+        [jnp.array(np.random.RandomState(i).randn(128)) for i in range(4)]
+    )
+    bank = prepare_cwt((1.0, 2.0, 4.0), "morl")
     batch_coef = jax.vmap(lambda x: apply_cwt(x, bank)[0])(batch)
     assert batch_coef.shape == (4, 3, 128)
 
 
 def test_apply_cwt_grad():
     x = jnp.array(np.random.RandomState(0).randn(64))
-    bank = prepare_cwt((1., 2., 4.), 'morl')
+    bank = prepare_cwt((1.0, 2.0, 4.0), "morl")
     g = jax.grad(lambda x: jnp.sum(jnp.abs(apply_cwt(x, bank)[0])))(x)
     assert g.shape == x.shape

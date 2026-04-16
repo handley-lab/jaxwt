@@ -1,4 +1,5 @@
 """Core 1D discrete wavelet transform."""
+
 import math
 import jax
 import jax.numpy as jnp
@@ -23,7 +24,7 @@ def dwt_max_level(data_len, filter_len):
     return int(math.floor(math.log2(data_len / (filter_len - 1))))
 
 
-def dwt(x, wavelet, mode='symmetric'):
+def dwt(x, wavelet, mode="symmetric"):
     """1D discrete wavelet transform.
 
     Parameters
@@ -44,17 +45,21 @@ def dwt(x, wavelet, mode='symmetric'):
     """
     w = get_wavelet(wavelet)
     F = w.dec_lo.shape[0]
-    if mode == 'periodization':
+    if mode == "periodization":
         if x.shape[0] % 2:
             x = jnp.concatenate([x, x[-1:]])
-        xp = jnp.pad(x, (F // 2 - 1, F // 2 - 1), mode='wrap')
+        xp = jnp.pad(x, (F // 2 - 1, F // 2 - 1), mode="wrap")
         M = int(math.ceil(x.shape[0] / 2))
-        return jnp.convolve(xp, w.dec_lo, mode='valid')[::2][:M], jnp.convolve(xp, w.dec_hi, mode='valid')[::2][:M]
+        return jnp.convolve(xp, w.dec_lo, mode="valid")[::2][:M], jnp.convolve(
+            xp, w.dec_hi, mode="valid"
+        )[::2][:M]
     xp = jnp.pad(x, (F - 2, F - 1), mode=mode)
-    return jnp.convolve(xp, w.dec_lo, mode='valid')[::2], jnp.convolve(xp, w.dec_hi, mode='valid')[::2]
+    return jnp.convolve(xp, w.dec_lo, mode="valid")[::2], jnp.convolve(
+        xp, w.dec_hi, mode="valid"
+    )[::2]
 
 
-def idwt(cA, cD, wavelet, mode='symmetric'):
+def idwt(cA, cD, wavelet, mode="symmetric"):
     """1D inverse discrete wavelet transform.
 
     Parameters
@@ -74,12 +79,12 @@ def idwt(cA, cD, wavelet, mode='symmetric'):
         Reconstructed signal.
     """
     w = get_wavelet(wavelet)
-    if mode == 'periodization':
+    if mode == "periodization":
         return _upc_per(cA, w.rec_lo) + _upc_per(cD, w.rec_hi)
     return _upc(cA, w.rec_lo) + _upc(cD, w.rec_hi)
 
 
-def downcoef(part, data, wavelet, mode='symmetric', level=1):
+def downcoef(part, data, wavelet, mode="symmetric", level=1):
     """Partial DWT: extract a single subband at the given decomposition level.
 
     Parameters
@@ -108,7 +113,9 @@ def downcoef(part, data, wavelet, mode='symmetric', level=1):
     w = get_wavelet(wavelet)
     for _ in range(level - 1):
         data, _ = dwt(data, w, mode)
-    return {'a': lambda: dwt(data, w, mode)[0], 'd': lambda: dwt(data, w, mode)[1]}[part]()
+    return {"a": lambda: dwt(data, w, mode)[0], "d": lambda: dwt(data, w, mode)[1]}[
+        part
+    ]()
 
 
 def upcoef(part, coeffs, wavelet, level=1, take=0):
@@ -139,7 +146,7 @@ def upcoef(part, coeffs, wavelet, level=1, take=0):
     then ``rec_lo`` for subsequent levels.
     """
     w = get_wavelet(wavelet)
-    first_filter = {'a': w.rec_lo, 'd': w.rec_hi}[part]
+    first_filter = {"a": w.rec_lo, "d": w.rec_hi}[part]
     rec = _upcoef_step(coeffs, first_filter)
     for _ in range(level - 1):
         rec = _upcoef_step(rec, w.rec_lo)
@@ -156,8 +163,8 @@ def _upcoef_step(c, f):
 
 def _upc(c, f):
     """Upsample-convolve: even/odd filter splitting."""
-    e = jnp.convolve(c, f[::2], mode='valid')
-    o = jnp.convolve(c, f[1::2], mode='valid')
+    e = jnp.convolve(c, f[::2], mode="valid")
+    o = jnp.convolve(c, f[1::2], mode="valid")
     return jnp.stack([e, o], axis=1).reshape(-1)
 
 
@@ -165,5 +172,5 @@ def _upc_per(c, f):
     """Upsample-convolve for periodization: circular convolution."""
     F, L = f.shape[0], 2 * c.shape[0]
     u = jnp.zeros(L).at[::2].set(c)
-    z = jnp.convolve(jnp.pad(u, (F - 1, F - 1), mode='wrap'), f, mode='valid')
+    z = jnp.convolve(jnp.pad(u, (F - 1, F - 1), mode="wrap"), f, mode="valid")
     return jnp.roll(z[:L], -(F // 2 - 1))

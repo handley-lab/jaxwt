@@ -5,7 +5,10 @@ Run with: python benchmarks/benchmark_vs_pywt.py
 Measures execution time excluding JIT compilation overhead.
 Each transform is warmed up (5 calls), then timed over 200 repetitions.
 """
-import os; os.environ['JAX_ENABLE_X64'] = '1'
+
+import os
+
+os.environ["JAX_ENABLE_X64"] = "1"
 import time
 import numpy as np
 import jax
@@ -15,7 +18,7 @@ import jaxwt
 from jaxwt._cwt import prepare_cwt, apply_cwt
 from jaxwt._swt import swt
 
-jax.config.update('jax_platform_name', 'cpu')
+jax.config.update("jax_platform_name", "cpu")
 
 
 def bench(fn, n_warmup=5, n_repeat=200):
@@ -37,38 +40,50 @@ x2d_j = jnp.array(x2d)
 x_swt = jnp.array(x1d[:1024])
 x_cwt = jnp.array(x1d[:512])
 
-dwt_jit = jax.jit(lambda x: jaxwt.dwt(x, 'db4'))
-wavedecn_1d_jit = jax.jit(lambda x: jaxwt.wavedecn(x, 'db4'))
-dwt2_jit = jax.jit(lambda x: jaxwt.dwt2(x, 'db4'))
-wavedecn_2d_jit = jax.jit(lambda x: jaxwt.wavedecn(x, 'db4', level=3))
-swt_jit = jax.jit(lambda x: swt(x, 'db4', level=3))
+dwt_jit = jax.jit(lambda x: jaxwt.dwt(x, "db4"))
+wavedecn_1d_jit = jax.jit(lambda x: jaxwt.wavedecn(x, "db4"))
+dwt2_jit = jax.jit(lambda x: jaxwt.dwt2(x, "db4"))
+wavedecn_2d_jit = jax.jit(lambda x: jaxwt.wavedecn(x, "db4", level=3))
+swt_jit = jax.jit(lambda x: swt(x, "db4", level=3))
 
-bank_morl = prepare_cwt((1., 2., 4., 8., 16., 32.), 'morl')
-bank_cmor = prepare_cwt((1., 2., 4., 8., 16., 32.), 'cmor1.5-1.0')
+bank_morl = prepare_cwt((1.0, 2.0, 4.0, 8.0, 16.0, 32.0), "morl")
+bank_cmor = prepare_cwt((1.0, 2.0, 4.0, 8.0, 16.0, 32.0), "cmor1.5-1.0")
 apply_jit = jax.jit(apply_cwt)
 
 tests = [
-    ("dwt 1D (N=4096)",
-     lambda: pywt.dwt(x1d, 'db4'),
-     lambda: dwt_jit(x1d_j)),
-    ("wavedecn 1D (N=4096)",
-     lambda: pywt.wavedecn(x1d.reshape(-1), 'db4'),
-     lambda: wavedecn_1d_jit(x1d_j)),
-    ("dwt2 (256x256)",
-     lambda: pywt.dwt2(x2d, 'db4'),
-     lambda: dwt2_jit(x2d_j)),
-    ("wavedecn 2D level=3",
-     lambda: pywt.wavedecn(x2d, 'db4', level=3),
-     lambda: wavedecn_2d_jit(x2d_j)),
-    ("swt 1D level=3 (N=1024)",
-     lambda: pywt.swt(np.array(x1d[:1024]), 'db4', level=3),
-     lambda: swt_jit(x_swt)),
-    ("cwt morl 6 scales (N=512)",
-     lambda: pywt.cwt(np.array(x1d[:512]), np.array([1.,2.,4.,8.,16.,32.]), 'morl'),
-     lambda: apply_jit(x_cwt, bank_morl)),
-    ("cwt cmor 6 scales (N=512)",
-     lambda: pywt.cwt(np.array(x1d[:512]), np.array([1.,2.,4.,8.,16.,32.]), 'cmor1.5-1.0'),
-     lambda: apply_jit(x_cwt, bank_cmor)),
+    ("dwt 1D (N=4096)", lambda: pywt.dwt(x1d, "db4"), lambda: dwt_jit(x1d_j)),
+    (
+        "wavedecn 1D (N=4096)",
+        lambda: pywt.wavedecn(x1d.reshape(-1), "db4"),
+        lambda: wavedecn_1d_jit(x1d_j),
+    ),
+    ("dwt2 (256x256)", lambda: pywt.dwt2(x2d, "db4"), lambda: dwt2_jit(x2d_j)),
+    (
+        "wavedecn 2D level=3",
+        lambda: pywt.wavedecn(x2d, "db4", level=3),
+        lambda: wavedecn_2d_jit(x2d_j),
+    ),
+    (
+        "swt 1D level=3 (N=1024)",
+        lambda: pywt.swt(np.array(x1d[:1024]), "db4", level=3),
+        lambda: swt_jit(x_swt),
+    ),
+    (
+        "cwt morl 6 scales (N=512)",
+        lambda: pywt.cwt(
+            np.array(x1d[:512]), np.array([1.0, 2.0, 4.0, 8.0, 16.0, 32.0]), "morl"
+        ),
+        lambda: apply_jit(x_cwt, bank_morl),
+    ),
+    (
+        "cwt cmor 6 scales (N=512)",
+        lambda: pywt.cwt(
+            np.array(x1d[:512]),
+            np.array([1.0, 2.0, 4.0, 8.0, 16.0, 32.0]),
+            "cmor1.5-1.0",
+        ),
+        lambda: apply_jit(x_cwt, bank_cmor),
+    ),
 ]
 
 print(f"{'Transform':<30} {'pywt':>16} {'jaxwt (JIT)':>16} {'ratio':>8}")

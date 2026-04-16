@@ -1,22 +1,30 @@
 """Tests for wavelet packets."""
+
 import numpy as np
 import jax
-jax.config.update('jax_enable_x64', True)
+
+jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp
 import pywt
 import pytest
 
-from jaxwt._packets import wp_decompose, wp_reconstruct, wp_decompose_nd, wp_reconstruct_nd
+from jaxwt._packets import (
+    wp_decompose,
+    wp_reconstruct,
+    wp_decompose_nd,
+    wp_reconstruct_nd,
+)
 
-WAVELETS = ['haar', 'db2', 'db4']
+WAVELETS = ["haar", "db2", "db4"]
 ATOL = 1e-14
 ATOL_RT = 1e-11
 
 
 # --- 1D leaf values match pywt ---
 
-@pytest.mark.parametrize('wavelet', WAVELETS)
-@pytest.mark.parametrize('N', [16, 32, 64])
+
+@pytest.mark.parametrize("wavelet", WAVELETS)
+@pytest.mark.parametrize("N", [16, 32, 64])
 def test_wp_leaves_match_pywt(wavelet, N):
     x_np = np.random.RandomState(0).randn(N)
     leaves, _ = wp_decompose(jnp.array(x_np), wavelet, maxlevel=2)
@@ -27,8 +35,9 @@ def test_wp_leaves_match_pywt(wavelet, N):
 
 # --- 1D roundtrip ---
 
-@pytest.mark.parametrize('wavelet', WAVELETS)
-@pytest.mark.parametrize('N', [16, 32])
+
+@pytest.mark.parametrize("wavelet", WAVELETS)
+@pytest.mark.parametrize("N", [16, 32])
 def test_wp_roundtrip(wavelet, N):
     x = jnp.array(np.random.RandomState(0).randn(N))
     leaves, shapes = wp_decompose(x, wavelet, maxlevel=2)
@@ -38,10 +47,11 @@ def test_wp_roundtrip(wavelet, N):
 
 # --- nD leaf values ---
 
-@pytest.mark.parametrize('wavelet', ['haar', 'db2'])
+
+@pytest.mark.parametrize("wavelet", ["haar", "db2"])
 def test_wp_nd_leaves_match_pywt(wavelet):
     x_np = np.random.RandomState(0).randn(16, 16)
-    mode = 'symmetric'
+    mode = "symmetric"
     leaves, _ = wp_decompose_nd(jnp.array(x_np), wavelet, mode=mode, maxlevel=1)
     wp = pywt.WaveletPacketND(x_np, wavelet, mode=mode, maxlevel=1)
     for path in leaves:
@@ -50,7 +60,8 @@ def test_wp_nd_leaves_match_pywt(wavelet):
 
 # --- nD roundtrip ---
 
-@pytest.mark.parametrize('wavelet', ['haar', 'db2'])
+
+@pytest.mark.parametrize("wavelet", ["haar", "db2"])
 def test_wp_nd_roundtrip(wavelet):
     x = jnp.array(np.random.RandomState(0).randn(16, 16))
     axes = (0, 1)
@@ -61,13 +72,14 @@ def test_wp_nd_roundtrip(wavelet):
 
 # --- Leaf count ---
 
+
 def test_wp_leaf_count():
     x = jnp.array(np.random.RandomState(0).randn(32))
-    leaves, _ = wp_decompose(x, 'haar', maxlevel=3)
+    leaves, _ = wp_decompose(x, "haar", maxlevel=3)
     assert len(leaves) == 2**3
 
 
 def test_wp_nd_leaf_count():
     x = jnp.array(np.random.RandomState(0).randn(16, 16))
-    leaves, _ = wp_decompose_nd(x, 'haar', maxlevel=2)
+    leaves, _ = wp_decompose_nd(x, "haar", maxlevel=2)
     assert len(leaves) == 4**2  # (2^ndim)^maxlevel
